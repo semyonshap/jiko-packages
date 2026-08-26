@@ -17,6 +17,7 @@
     "knip": "nx run-many -t knip",
     "clean": "nx reset",
     "graph": "nx graph",
+    "login": "npm login",
     "changeset": "changeset",
     "version": "changeset version",
     "publish": "changeset publish"
