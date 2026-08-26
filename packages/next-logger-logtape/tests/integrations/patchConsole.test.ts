@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { getLogger } from '@logtape/logtape'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 import { patchConsole } from '@/next-logger'
 
@@ -113,7 +113,9 @@ describe('patchConsole integration', () => {
   it('should keep ANSI escape codes when stripAnsi is false', () => {
     const restorePatch = patchConsole({
       category: ['app'],
-      stripAnsi: false,
+      format: {
+        stripAnsi: false,
+      },
     })
 
     console.log('\u001b[31mred\u001b[0m')

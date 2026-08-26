@@ -6,11 +6,20 @@ import { getLogger, type Logger } from '@logtape/logtape'
 
 const require = createRequire(process.cwd() + '/')
 
+const DEFAULT_FORMAT_OPTIONS: Required<MessageFormatOptions> = {
+  stripAnsi: true,
+  replaceNewlines: true,
+}
+
+interface MessageFormatOptions {
+  stripAnsi?: boolean
+  replaceNewlines?: boolean
+}
+
 export interface NextLoggerPatchOptions {
   logger?: Logger
   category?: string[]
-  stripAnsi?: boolean
-  replaceNewlines?: boolean
+  format?: MessageFormatOptions
 }
 
 const consoleMethods = [
@@ -85,25 +94,22 @@ function isStructuredValue(value: unknown): value is Record<string, unknown> {
 // Build message template and structured properties from console args
 function toLogTapeMessage(
   args: readonly unknown[],
-  stripAnsi: boolean,
-  replaceNewlines: boolean,
+  formatOptions?: MessageFormatOptions,
 ): { template: string; properties: Record<string, unknown> } {
+  const { stripAnsi, replaceNewlines } = {
+    ...DEFAULT_FORMAT_OPTIONS,
+    ...formatOptions,
+  }
+
   const properties: Record<string, unknown> = {}
   const cleaned = args.map((v) => clean(v, stripAnsi))
 
   // Separate primitive values from structured objects
-  const primitives = cleaned.filter((v) => !isStructuredValue(v))
+  const primitives = cleaned.filter((v) => !isStructuredValue(v) && v !== undefined)
   const objects = cleaned.filter((v) => isStructuredValue(v))
 
   // Build template:
-  // - If first arg is a string, use it as format pattern.
-  // - Otherwise, just concatenate all primitives (like console.log).
-  let template: string
-  if (typeof cleaned[0] === 'string') {
-    template = format(cleaned[0], ...primitives.slice(1))
-  } else {
-    template = format(...primitives)
-  }
+  let template = format(...primitives)
 
   // Merge all structured objects into properties
   for (const obj of objects) {
@@ -121,11 +127,10 @@ function logAt(
   logger: Logger,
   level: 'info' | 'debug' | 'warn' | 'error' | 'trace',
   args: readonly unknown[],
-  stripAnsi: boolean,
-  replaceNewlines: boolean,
+  formatOptions?: MessageFormatOptions,
   properties?: Record<string, unknown>,
 ): void {
-  const { template, properties: structured } = toLogTapeMessage(args, stripAnsi, replaceNewlines)
+  const { template, properties: structured } = toLogTapeMessage(args, formatOptions)
   const record = { ...properties, ...structured }
   runInDispatchContext(() => {
     switch (level) {
@@ -152,7 +157,6 @@ function logAt(
  * Returns restore function.
  */
 export function patchConsole(options: NextLoggerPatchOptions = {}): () => void {
-  const { stripAnsi = true, replaceNewlines = true } = options
   const consoleLogger = getBaseLogger(options).getChild('console')
   const target = console as unknown as Record<string, unknown>
   const original = new Map<string, (...args: unknown[]) => void>()
@@ -165,7 +169,7 @@ export function patchConsole(options: NextLoggerPatchOptions = {}): () => void {
         original.get(method)?.(...args)
         return
       }
-      logAt(consoleLogger, level, args, stripAnsi, replaceNewlines)
+      logAt(consoleLogger, level, args, options.format)
     }
   }
 
@@ -179,7 +183,6 @@ export function patchConsole(options: NextLoggerPatchOptions = {}): () => void {
  * Returns restore function.
  */
 export function patchNextLogging(options: NextLoggerPatchOptions = {}): () => void {
-  const { stripAnsi = true, replaceNewlines = true } = options
   try {
     const logPath = require.resolve('next/dist/build/output/log')
     require(logPath)
@@ -195,7 +198,7 @@ export function patchNextLogging(options: NextLoggerPatchOptions = {}): () => vo
 
     for (const method of nextMethods) {
       exports[method] = (...message: unknown[]) => {
-        logAt(nextLogger, nextLevels[method] ?? 'info', message, stripAnsi, replaceNewlines, {
+        logAt(nextLogger, nextLevels[method] ?? 'info', message, options.format, {
           prefix: method,
         })
       }

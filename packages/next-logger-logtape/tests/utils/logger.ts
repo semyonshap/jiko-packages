@@ -1,4 +1,5 @@
 import { configure, getConsoleSink, getJsonLinesFormatter } from '@logtape/logtape'
+
 import { CONSOLE_METHODS, type ConsoleMethod } from './console'
 
 export interface LogTapeTestHarness {

@@ -1,5 +1,17 @@
 # @with-jiko/next-logger-logtape
 
+## 1.1.2
+
+### Patch Changes
+
+- feat: add format option object to consolidate stripAnsi and replaceNewlines
+  feat: filter out undefined values from log message arguments
+  fix: prevent "undefined" string from appearing in log messages
+  test: add concurrency test for AsyncLocalStorage dispatch context
+  test: add regression test for console.log(undefined) handling
+  refactor: pass format options object instead of separate flags
+  refactor: simplify template building by always using format(...primitives)
+
 ## 1.1.1
 
 ### Patch Changes
