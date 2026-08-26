@@ -1,7 +1,7 @@
 import { getLogger } from '@logtape/logtape'
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
-import { patchConsole } from '@/next-logger'
+import { patchConsole } from '@/console'
 
 import { setupLogTape, setupConsoleTest } from '../utils/logger'
 import { captureConsoleState, restoreConsoleState, type ConsoleState } from '../utils/console'

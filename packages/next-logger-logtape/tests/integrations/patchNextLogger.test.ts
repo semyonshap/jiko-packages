@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
-import { patchNextLogger } from '@/next-logger'
+import { patchNextLogger } from '@/node'
 
 import { setupLogTape } from '../utils/logger'
 import { loadNextLog, clearNextLogCache } from '../utils/nextjs'
@@ -24,8 +24,8 @@ describe('patchNextLogger integration', () => {
     clearNextLogCache()
   })
 
-  it('should route both console and Next.js logger to LogTape', () => {
-    const restorePatch = patchNextLogger({ category: ['app'] })
+  it('should route both console and Next.js logger to LogTape', async () => {
+    const restorePatch = await patchNextLogger({ category: ['app'] })
 
     const nextLog = loadNextLog()
     nextLog.info('next info message')
@@ -37,8 +37,8 @@ describe('patchNextLogger integration', () => {
     expect(lines.find((l) => l.message === 'console message').logger).toBe('app.console')
   })
 
-  it('should map levels for both patched targets', () => {
-    const restorePatch = patchNextLogger({ category: ['app'] })
+  it('should map levels for both patched targets', async () => {
+    const restorePatch = await patchNextLogger({ category: ['app'] })
     const nextLog = loadNextLog()
 
     nextLog.error('next error')
@@ -50,8 +50,8 @@ describe('patchNextLogger integration', () => {
     expect(lines.find((l) => l.message === 'console error').level).toBe('ERROR')
   })
 
-  it('should strip ANSI codes from both targets by default', () => {
-    const restorePatch = patchNextLogger({ category: ['app'] })
+  it('should strip ANSI codes from both targets by default', async () => {
+    const restorePatch = await patchNextLogger({ category: ['app'] })
     const nextLog = loadNextLog()
 
     nextLog.info('\u001b[32mgreen\u001b[0m')
@@ -63,11 +63,11 @@ describe('patchNextLogger integration', () => {
     expect(lines.find((l) => l.logger === 'app.console').message).toBe('green')
   })
 
-  it('should restore both console and Next.js logger after calling restore', () => {
+  it('should restore both console and Next.js logger after calling restore', async () => {
     const originalLog = console.log
     const originalNext = loadNextLog()
 
-    const restorePatch = patchNextLogger({ category: ['app'] })
+    const restorePatch = await patchNextLogger({ category: ['app'] })
     expect(console.log).not.toBe(originalLog)
     expect(loadNextLog().info).not.toBe(originalNext.info)
 
@@ -93,8 +93,8 @@ describe('patchNextLogger with custom category', () => {
     clearNextLogCache()
   })
 
-  it('should use the provided category for both targets', () => {
-    const restorePatch = patchNextLogger({ category: ['api'] })
+  it('should use the provided category for both targets', async () => {
+    const restorePatch = await patchNextLogger({ category: ['api'] })
     const nextLog = loadNextLog()
 
     nextLog.info('api next message')

@@ -1,6 +1,3 @@
-export {
-  patchConsole,
-  patchNextLogger,
-  patchNextLogging,
-  type NextLoggerPatchOptions,
-} from './next-logger'
+export { patchConsole } from './console'
+export type { NextLoggerPatchOptions } from './types'
+export { patchNextLogger, patchNextLogging } from './node'

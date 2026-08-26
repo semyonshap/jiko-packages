@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
-import { patchNextLogging } from '@/next-logger'
+import { patchNextLogging } from '@/node'
 
 import { setupLogTape } from '../utils/logger'
 import { loadNextLog, clearNextLogCache } from '../utils/nextjs'
@@ -20,8 +20,8 @@ describe('Integration with real Next.js logger', () => {
     clearNextLogCache()
   })
 
-  it('should redirect Next.js internal logger to LogTape with JSON format', () => {
-    const restorePatch = patchNextLogging({ category: ['app'] })
+  it('should redirect Next.js internal logger to LogTape with JSON format', async () => {
+    const restorePatch = await patchNextLogging({ category: ['app'] })
 
     const nextLog = loadNextLog()
 
@@ -39,8 +39,8 @@ describe('Integration with real Next.js logger', () => {
     expect(logEntry['@timestamp']).toBeDefined()
   })
 
-  it('should correctly map different log levels', () => {
-    const restorePatch = patchNextLogging({ category: ['app'] })
+  it('should correctly map different log levels', async () => {
+    const restorePatch = await patchNextLogging({ category: ['app'] })
     const nextLog = loadNextLog()
 
     nextLog.error('Error message')
@@ -55,11 +55,11 @@ describe('Integration with real Next.js logger', () => {
     expect(lines.find((l) => l.message === 'Server ready').prefix).toBe('ready')
   })
 
-  it('should restore original logger methods after calling restore', () => {
+  it('should restore original logger methods after calling restore', async () => {
     const originalLog = loadNextLog()
     const originalInfo = originalLog.info
 
-    const restorePatch = patchNextLogging()
+    const restorePatch = await patchNextLogging()
 
     // После патча модуль из кэша отдаёт пропатченные методы
     const patchedLog = loadNextLog()
