@@ -18,9 +18,9 @@
     "clean": "nx reset",
     "graph": "nx graph",
     "login": "npm login",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "publish": "changeset publish"
+    "chs:": "changeset",
+    "chs:version": "changeset version",
+    "chs:publish": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.1",

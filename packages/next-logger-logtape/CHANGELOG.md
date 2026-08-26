@@ -1,5 +1,19 @@
 # @with-jiko/next-logger-logtape
 
+## 1.1.1
+
+### Patch Changes
+
+- feat: add replaceNewlines option to sanitize log messages
+  feat: implement AsyncLocalStorage-based dispatch context to prevent infinite recursion
+  feat: add guardLoggerDispatch to wrap logger methods
+  fix: skip patched console redirect when dispatching
+  refactor: simplify message formatting and properties extraction
+  refactor: flatten structured objects into properties instead of arg0
+  test: add integration tests for recursion prevention and direct logger calls
+  test: refactor tests to use shared setupConsoleTest utility
+  test: update tests to expect flattened properties
+
 ## 1.1.0
 
 ### Minor Changes
