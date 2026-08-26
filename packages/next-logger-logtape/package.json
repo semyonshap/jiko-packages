@@ -43,8 +43,7 @@
     "typecheck": "tsc --noEmit",
     "knip": "knip",
     "test": "vitest run",
-    "test:integrations": "vitest run tests/integrations",
-    "test:demo": "vitest run tests/demo --disable-console-intercept"
+    "test:integrations": "vitest run tests/integrations"
   },
   "peerDependencies": {
     "@logtape/logtape": "^2.0.0",
