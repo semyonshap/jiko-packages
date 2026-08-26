@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "packageManager": "pnpm@11.22.0",
   "scripts": {
-    "all": "pnpm format & pnpm lint & pnpm typecheck & pnpm knip",
+    "all": "pnpm format & pnpm lint & pnpm typecheck & pnpm knip & pnpm build",
     "dev": "nx run-many -t dev --all --parallel",
     "build": "nx run-many -t build",
     "typecheck": "nx run-many -t typecheck",

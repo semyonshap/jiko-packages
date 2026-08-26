@@ -1,6 +1,6 @@
-import { createRequire } from "node:module";
 import { format } from "node:util";
 import ansiRegex from "ansi-regex";
+import { createRequire } from "node:module";
 import { getLogger, type Logger } from "@logtape/logtape";
 
 const require = createRequire(process.cwd() + "/");
@@ -86,7 +86,7 @@ function logAt(
   args: readonly unknown[],
   stripAnsi: boolean,
   properties?: Record<string, unknown>,
-) {
+): void {
   const { template, properties: structured } = toLogTapeMessage(
     args,
     stripAnsi,
