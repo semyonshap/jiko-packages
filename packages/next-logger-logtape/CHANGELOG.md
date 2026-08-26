@@ -1,5 +1,11 @@
 # @with-jiko/next-logger-logtape
 
+## 1.1.3
+
+### Patch Changes
+
+- 9940d75: feat: add separate entry points for console and node modules
+
 ## 1.1.2
 
 ### Patch Changes
