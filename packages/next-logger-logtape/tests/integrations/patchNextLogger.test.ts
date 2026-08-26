@@ -4,11 +4,7 @@ import { patchNextLogger } from '@/next-logger'
 
 import { setupLogTape } from '../utils/logger'
 import { loadNextLog, clearNextLogCache } from '../utils/nextjs'
-import {
-  captureConsoleState,
-  restoreConsoleState,
-  type ConsoleState,
-} from '../utils/console'
+import { captureConsoleState, restoreConsoleState, type ConsoleState } from '../utils/console'
 
 describe('patchNextLogger integration', () => {
   let capturedOutput: string[]
@@ -37,12 +33,8 @@ describe('patchNextLogger integration', () => {
     restorePatch()
 
     const lines = capturedOutput.map((line) => JSON.parse(line))
-    expect(
-      lines.find((l) => l.message === 'next info message').logger,
-    ).toBe('app.next')
-    expect(lines.find((l) => l.message === 'console message').logger).toBe(
-      'app.console',
-    )
+    expect(lines.find((l) => l.message === 'next info message').logger).toBe('app.next')
+    expect(lines.find((l) => l.message === 'console message').logger).toBe('app.console')
   })
 
   it('should map levels for both patched targets', () => {
@@ -54,12 +46,8 @@ describe('patchNextLogger integration', () => {
     restorePatch()
 
     const lines = capturedOutput.map((line) => JSON.parse(line))
-    expect(lines.find((l) => l.message === 'next error').level).toBe(
-      'ERROR',
-    )
-    expect(lines.find((l) => l.message === 'console error').level).toBe(
-      'ERROR',
-    )
+    expect(lines.find((l) => l.message === 'next error').level).toBe('ERROR')
+    expect(lines.find((l) => l.message === 'console error').level).toBe('ERROR')
   })
 
   it('should strip ANSI codes from both targets by default', () => {
@@ -71,12 +59,8 @@ describe('patchNextLogger integration', () => {
     restorePatch()
 
     const lines = capturedOutput.map((line) => JSON.parse(line))
-    expect(lines.find((l) => l.logger === 'app.next').message).toBe(
-      'green',
-    )
-    expect(lines.find((l) => l.logger === 'app.console').message).toBe(
-      'green',
-    )
+    expect(lines.find((l) => l.logger === 'app.next').message).toBe('green')
+    expect(lines.find((l) => l.logger === 'app.console').message).toBe('green')
   })
 
   it('should restore both console and Next.js logger after calling restore', () => {
@@ -118,11 +102,7 @@ describe('patchNextLogger with custom category', () => {
     restorePatch()
 
     const lines = capturedOutput.map((line) => JSON.parse(line))
-    expect(
-      lines.find((l) => l.message === 'api next message').logger,
-    ).toBe('api.next')
-    expect(
-      lines.find((l) => l.message === 'api console message').logger,
-    ).toBe('api.console')
+    expect(lines.find((l) => l.message === 'api next message').logger).toBe('api.next')
+    expect(lines.find((l) => l.message === 'api console message').logger).toBe('api.console')
   })
 })

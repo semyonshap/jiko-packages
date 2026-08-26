@@ -8,12 +8,7 @@ import eslintPluginPerfectionist from 'eslint-plugin-perfectionist'
 
 export default defineConfig(
   {
-    ignores: [
-      '**/node_modules',
-      '**/dist',
-      '**/out',
-      '**/components/ui/**/*',
-    ],
+    ignores: ['**/node_modules', '**/dist', '**/out', '**/components/ui/**/*'],
   },
   tseslint.configs.recommended,
   eslintPluginReact.configs.flat.recommended,

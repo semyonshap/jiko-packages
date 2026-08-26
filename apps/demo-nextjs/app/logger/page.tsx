@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { DemoServerLog } from '@/actions/logger'
+import { ServerLog } from '@/actions/logger'
 import { Button } from '@/components/ui/button'
 import {
   Field,
@@ -13,7 +13,7 @@ import {
   FieldLegend,
   FieldSet,
 } from '@/components/ui/field'
-import { Log } from '@/lib/utils'
+import { emitLog } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -22,34 +22,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { FormValues, Levels } from '@/types'
+import { FormValues, Levels, Transports } from '@/types'
 
 export default function LoggerPage() {
   const formRef = useRef<HTMLFormElement>(null)
-  const { register, getValues, handleSubmit, control } =
-    useForm<FormValues>({
-      defaultValues: {
-        message: 'Test message',
-        level: 'info',
-        context: '',
-      },
-    })
+  const { register, getValues, handleSubmit, control } = useForm<FormValues>({
+    defaultValues: {
+      message: 'Test message',
+      level: 'info',
+      context: '',
+      transport: 'console',
+    },
+  })
 
   const handleClientLog = () => {
-    const { message, level, context } = getValues()
-    const logMethod = Log[level]
-    if (typeof logMethod === 'function') {
-      logMethod(message, {
-        from: 'client',
-        context: context || undefined,
-      })
-    } else {
-      console.warn(`Log method "${level}" not found`)
-    }
+    const { message, level, context, transport } = getValues()
+    emitLog(transport, level, message, {
+      from: 'client',
+      context: context || undefined,
+    })
   }
 
   const onServerSubmit = handleSubmit(async (data) => {
-    await DemoServerLog(data)
+    await ServerLog(data)
   })
 
   return (
@@ -67,9 +62,7 @@ export default function LoggerPage() {
                   placeholder="e.g. Button clicked"
                   {...register('message')}
                 />
-                <FieldDescription>
-                  The text that will be written to the log.
-                </FieldDescription>
+                <FieldDescription>The text that will be written to the log.</FieldDescription>
               </FieldContent>
             </Field>
 
@@ -80,10 +73,7 @@ export default function LoggerPage() {
                   name="level"
                   control={control}
                   render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a level" />
                       </SelectTrigger>
@@ -115,16 +105,39 @@ export default function LoggerPage() {
                 </FieldDescription>
               </FieldContent>
             </Field>
+
+            <Field>
+              <FieldLabel htmlFor="transport">Transport</FieldLabel>
+              <FieldContent>
+                <Controller
+                  name="transport"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a transport" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Transports.map((transport) => (
+                          <SelectItem key={transport} value={transport}>
+                            {transport}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FieldDescription>
+                  Send the log via <code>console.log</code> or via the LogTape logger directly.
+                </FieldDescription>
+              </FieldContent>
+            </Field>
           </FieldGroup>
         </FieldSet>
 
         <div className="mt-6 flex flex-wrap gap-2">
           <Button type="submit">Server</Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClientLog}
-          >
+          <Button type="button" variant="outline" onClick={handleClientLog}>
             Client
           </Button>
         </div>

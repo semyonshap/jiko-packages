@@ -28,9 +28,7 @@ describe('Integration with real Next.js logger', () => {
     nextLog.info('Hello from Next.js logger')
     restorePatch()
 
-    const jsonLine = capturedOutput.find((line) =>
-      line.includes('Hello from Next.js logger'),
-    )
+    const jsonLine = capturedOutput.find((line) => line.includes('Hello from Next.js logger'))
     expect(jsonLine).toBeDefined()
 
     const logEntry = JSON.parse(jsonLine!)
@@ -51,16 +49,10 @@ describe('Integration with real Next.js logger', () => {
     restorePatch()
 
     const lines = capturedOutput.map((line) => JSON.parse(line))
-    expect(lines.find((l) => l.message === 'Error message').level).toBe(
-      'ERROR',
-    )
+    expect(lines.find((l) => l.message === 'Error message').level).toBe('ERROR')
     expect(lines.find((l) => l.message === 'Warning').level).toBe('WARN')
-    expect(lines.find((l) => l.message === 'Server ready').level).toBe(
-      'INFO',
-    )
-    expect(lines.find((l) => l.message === 'Server ready').prefix).toBe(
-      'ready',
-    )
+    expect(lines.find((l) => l.message === 'Server ready').level).toBe('INFO')
+    expect(lines.find((l) => l.message === 'Server ready').prefix).toBe('ready')
   })
 
   it('should restore original logger methods after calling restore', () => {

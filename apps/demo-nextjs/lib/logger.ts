@@ -1,13 +1,9 @@
-import {
-  configure,
-  getConsoleSink,
-  getJsonLinesFormatter,
-  getLogger,
-} from '@logtape/logtape'
+import { configure, getConsoleSink, getJsonLinesFormatter, getLogger } from '@logtape/logtape'
 
 await configure({
   sinks: {
     console: getConsoleSink({
+      console: globalThis.console,
       formatter: getJsonLinesFormatter({
         properties: 'flatten',
       }),

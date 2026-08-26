@@ -1,13 +1,14 @@
-const CONSOLE_METHODS = [
+export type ConsoleMethod = 'log' | 'info' | 'debug' | 'warn' | 'error' | 'trace'
+
+export const CONSOLE_METHODS: readonly ConsoleMethod[] = [
   'log',
   'info',
   'debug',
   'warn',
   'error',
   'trace',
-] as const
+]
 
-export type ConsoleMethod = (typeof CONSOLE_METHODS)[number]
 export type ConsoleState = Record<ConsoleMethod, unknown>
 
 /** Snapshot the current `console.*` methods so they can be restored later. */

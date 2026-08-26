@@ -7,9 +7,6 @@ export function clearNextLogCache(): void {
   delete require.cache[logPath]
 }
 
-export function loadNextLog(): Record<
-  string,
-  (...args: unknown[]) => void
-> {
+export function loadNextLog(): Record<string, (...args: unknown[]) => void> {
   return require('next/dist/build/output/log')
 }

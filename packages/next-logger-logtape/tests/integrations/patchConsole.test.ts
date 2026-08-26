@@ -1,13 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { getLogger } from '@logtape/logtape'
 
 import { patchConsole } from '@/next-logger'
 
-import { setupLogTape } from '../utils/logger'
-import {
-  captureConsoleState,
-  restoreConsoleState,
-  type ConsoleState,
-} from '../utils/console'
+import { setupLogTape, setupConsoleTest } from '../utils/logger'
+import { captureConsoleState, restoreConsoleState, type ConsoleState } from '../utils/console'
 
 describe('patchConsole integration', () => {
   let capturedOutput: string[]
@@ -55,18 +52,10 @@ describe('patchConsole integration', () => {
     restorePatch()
 
     const lines = capturedOutput.map((line) => JSON.parse(line))
-    expect(lines.find((l) => l.message === 'debug message').level).toBe(
-      'DEBUG',
-    )
-    expect(lines.find((l) => l.message === 'warn message').level).toBe(
-      'WARN',
-    )
-    expect(lines.find((l) => l.message === 'error message').level).toBe(
-      'ERROR',
-    )
-    expect(lines.find((l) => l.message === 'trace message').level).toBe(
-      'TRACE',
-    )
+    expect(lines.find((l) => l.message === 'debug message').level).toBe('DEBUG')
+    expect(lines.find((l) => l.message === 'warn message').level).toBe('WARN')
+    expect(lines.find((l) => l.message === 'error message').level).toBe('ERROR')
+    expect(lines.find((l) => l.message === 'trace message').level).toBe('TRACE')
   })
 
   it('should format multiple arguments and keep objects structured', () => {
@@ -77,14 +66,18 @@ describe('patchConsole integration', () => {
     restorePatch()
 
     const lines = capturedOutput.map((line) => JSON.parse(line))
-    expect(lines.find((l) => l.message?.includes('count'))?.message).toBe(
-      'count: 5',
-    )
+    // Check first log: count
+    const countLine = lines.find((l) => l.message?.includes('count'))
+    expect(countLine).toBeDefined()
+    expect(countLine.message).toBe('count: 5')
 
-    const objLine = lines.find((l) => l.logger === 'app.console' && l.arg0)
+    // Check second log: object should be flattened into properties,
+    // not duplicated into the message
+    const objLine = lines.find((l) => l.logger === 'app.console' && l.a === 1)
     expect(objLine).toBeDefined()
-    expect(objLine.message).toBe('value: {"a":1}')
-    expect(objLine.arg0).toEqual({ a: 1 })
+    expect(objLine.message).toBe('value:')
+    expect(objLine.a).toBe(1)
+    expect(objLine.arg0).toBeUndefined()
   })
 
   it('should preserve a standalone object as structured properties', () => {
@@ -93,12 +86,17 @@ describe('patchConsole integration', () => {
     console.log({ method: 'GET', status: 200 })
     restorePatch()
 
-    const line = capturedOutput
-      .map((l) => JSON.parse(l))
-      .find((l) => l.logger === 'app.console' && l.arg0)
+    const lines = capturedOutput.map((l) => JSON.parse(l))
+    const line = lines.find(
+      (l) => l.logger === 'app.console' && l.method === 'GET' && l.status === 200,
+    )
     expect(line).toBeDefined()
-    expect(line.message).toBe('{"method":"GET","status":200}')
-    expect(line.arg0).toEqual({ method: 'GET', status: 200 })
+    // The object goes only into properties, not into the message
+    expect(line.message).toBe('')
+    // Properties should be at top level
+    expect(line.method).toBe('GET')
+    expect(line.status).toBe(200)
+    expect(line.arg0).toBeUndefined()
   })
 
   it('should strip ANSI escape codes by default', () => {
@@ -107,9 +105,7 @@ describe('patchConsole integration', () => {
     console.log('\u001b[31mred\u001b[0m')
     restorePatch()
 
-    const line = capturedOutput
-      .map((l) => JSON.parse(l))
-      .find((l) => l.message?.includes('red'))
+    const line = capturedOutput.map((l) => JSON.parse(l)).find((l) => l.message?.includes('red'))
     expect(line).toBeDefined()
     expect(line.message).toBe('red')
   })
@@ -123,9 +119,7 @@ describe('patchConsole integration', () => {
     console.log('\u001b[31mred\u001b[0m')
     restorePatch()
 
-    const line = capturedOutput
-      .map((l) => JSON.parse(l))
-      .find((l) => l.message?.includes('red'))
+    const line = capturedOutput.map((l) => JSON.parse(l)).find((l) => l.message?.includes('red'))
     expect(line).toBeDefined()
     expect(line.message).toBe('\u001b[31mred\u001b[0m')
   })
@@ -138,5 +132,56 @@ describe('patchConsole integration', () => {
 
     restorePatch()
     expect(console.log).toBe(originalLog)
+  })
+
+  it('should not patch itself when LogTape writes to a console sink', async () => {
+    const { written, restore } = await setupConsoleTest()
+
+    const restorePatch = patchConsole({ category: ['app'] })
+
+    console.log('hello')
+    console.info('world')
+    console.warn('careful')
+    console.error('boom')
+
+    restorePatch()
+    restore() // restore original console and LogTape config
+
+    // Each console.* call must produce exactly one LogTape record printed
+    // once via the original console method — no recursion, no duplicates.
+    expect(written).toHaveLength(4)
+
+    const hello = written.find((w) => w.method === 'info' && String(w.args[0]).includes('hello'))
+    expect(hello).toBeDefined()
+    const helloRecord = JSON.parse(String(hello!.args[0]))
+    expect(helloRecord.message).toBe('hello')
+    expect(helloRecord.level).toBe('INFO')
+    expect(helloRecord.logger).toBe('app.console')
+
+    const careful = written.find((w) => w.method === 'warn')
+    expect(JSON.parse(String(careful!.args[0])).level).toBe('WARN')
+
+    const boom = written.find((w) => w.method === 'error')
+    expect(JSON.parse(String(boom!.args[0])).level).toBe('ERROR')
+  })
+
+  it('should not re-log direct logger calls when console is patched', async () => {
+    const { written, restore } = await setupConsoleTest()
+
+    const restorePatch = patchConsole({ category: ['app'] })
+
+    // A direct LogTape call must not be re-routed through the patched console
+    // (which would mangle the record) nor recurse.
+    const logger = getLogger(['app'])
+    logger.info('direct message', { from: 'logger' })
+
+    restorePatch()
+    restore()
+
+    expect(written).toHaveLength(1)
+    const record = JSON.parse(String(written[0].args[0]))
+    expect(record.message).toBe('direct message')
+    expect(record.logger).toBe('app')
+    expect(record.from).toBe('logger')
   })
 })
