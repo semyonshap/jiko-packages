@@ -64,9 +64,9 @@ Then use the Next [Instrumentation](https://nextjs.org/docs/app/building-your-ap
 - Create `instrumentation.ts|js` file in the root directory of your project (or inside the src folder if using one)
   ```js
   export async function register() {
-    if (process.env.NEXT_RUNTIME === "nodejs") {
-      await require("pino");
-      await require("next-logger");
+    if (process.env.NEXT_RUNTIME === 'nodejs') {
+      await require('pino')
+      await require('next-logger')
     }
   }
   ```
@@ -77,7 +77,7 @@ Then use the Next [Instrumentation](https://nextjs.org/docs/app/building-your-ap
     experimental: {
       instrumentationHook: true,
     },
-  };
+  }
   ```
 
 ### Presets
@@ -101,18 +101,18 @@ For example:
 
 ```js
 // next-logger.config.js
-const pino = require("pino");
+const pino = require('pino')
 
 const logger = (defaultConfig) =>
   pino({
     ...defaultConfig,
-    messageKey: "message",
-    mixin: () => ({ name: "custom-pino-instance" }),
-  });
+    messageKey: 'message',
+    mixin: () => ({ name: 'custom-pino-instance' }),
+  })
 
 module.exports = {
   logger,
-};
+}
 ```
 
 Or with `winston`:
@@ -122,7 +122,7 @@ npm install winston
 ```
 
 ```js
-const { createLogger, format, transports } = require("winston");
+const { createLogger, format, transports } = require('winston')
 
 const logger = (defaultConfig) =>
   createLogger({
@@ -132,11 +132,11 @@ const logger = (defaultConfig) =>
         format: format.json(),
       }),
     ],
-  });
+  })
 
 module.exports = {
   logger,
-};
+}
 ```
 
 ## Breaking Changes on >=1.0.0

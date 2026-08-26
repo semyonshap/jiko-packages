@@ -4,5 +4,5 @@ export default function Home() {
       <h1>Home Page</h1>
       <a href="/logger">logger page</a>
     </main>
-  );
+  )
 }

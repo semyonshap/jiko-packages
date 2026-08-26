@@ -3,4 +3,4 @@ export {
   patchNextLogger,
   patchNextLogging,
   type NextLoggerPatchOptions,
-} from "./next-logger";
+} from './next-logger'

@@ -1,8 +1,8 @@
-import { configure, getJsonLinesFormatter } from "@logtape/logtape";
+import { configure, getJsonLinesFormatter } from '@logtape/logtape'
 
 export interface LogTapeTestHarness {
-  capturedOutput: string[];
-  restore: () => void;
+  capturedOutput: string[]
+  restore: () => void
 }
 
 export interface LogTapeSetupOptions {
@@ -10,15 +10,15 @@ export interface LogTapeSetupOptions {
    * Categories to route to the capture sink.
    * Defaults to `[["app"]]`.
    */
-  categories?: string[][];
+  categories?: string[][]
 }
 
 export async function setupLogTape(
   options: LogTapeSetupOptions = {},
 ): Promise<LogTapeTestHarness> {
-  const { categories = [["app"]] } = options;
-  const capturedOutput: string[] = [];
-  const formatter = getJsonLinesFormatter({ properties: "flatten" });
+  const { categories = [['app']] } = options
+  const capturedOutput: string[] = []
+  const formatter = getJsonLinesFormatter({ properties: 'flatten' })
 
   await configure({
     sinks: {
@@ -26,19 +26,19 @@ export async function setupLogTape(
       // This way we verify the actual LogTape formatting without relying on
       // intercepting process.stdout/console.
       test: (record) => {
-        capturedOutput.push(formatter(record));
+        capturedOutput.push(formatter(record))
       },
     },
     loggers: categories.map((category) => ({
       category,
-      lowestLevel: "trace",
-      sinks: ["test"],
+      lowestLevel: 'trace',
+      sinks: ['test'],
     })),
     reset: true,
-  });
+  })
 
   return {
     capturedOutput,
     restore: () => {},
-  };
+  }
 }
