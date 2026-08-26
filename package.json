@@ -1,5 +1,5 @@
 {
-  "name": "jiko",
+  "name": "with-jiko",
   "version": "1.0.0",
   "private": true,
   "description": "Jiko packages monorepo",
@@ -18,8 +18,8 @@
     "clean": "nx reset",
     "graph": "nx graph",
     "changeset": "changeset",
-    "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish"
+    "version": "changeset version",
+    "publish": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.1",
