@@ -1,4 +1,5 @@
-import { patchNextLogger } from '@with-jiko/next-logger-logtape'
+/* import { patchNextLogger } from '@with-jiko/next-logger-logtape'
+import './lib/logger'
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
@@ -6,3 +7,4 @@ export async function register() {
     console.log('[instrumentation] logger patched')
   }
 }
+ */
