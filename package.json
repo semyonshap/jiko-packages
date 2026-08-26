@@ -1,0 +1,39 @@
+{
+  "name": "jiko-bridge",
+  "version": "1.1.21",
+  "private": true,
+  "description": "Jiko Bridge monorepo",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.22.0",
+  "scripts": {
+    "all": "pnpm format & pnpm lint & pnpm typecheck ",
+    "dev": "nx run-many -t dev --all --parallel",
+    "build": "nx run-many -t build",
+    "typecheck": "nx run-many -t typecheck",
+    "lint": "nx run-many -t lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "nx run-many -t test",
+    "knip": "nx run-many -t knip",
+    "clean": "nx reset",
+    "graph": "nx graph"
+  },
+  "devDependencies": {
+    "@electron-toolkit/eslint-config-prettier": "^3.0.0",
+    "@electron-toolkit/eslint-config-ts": "^3.1.0",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.36.0",
+    "eslint-plugin-perfectionist": "^5.10.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "knip": "^6.32.2",
+    "nx": "^21.0.0",
+    "prettier": "^3.6.2",
+    "tsdown": "^0.22.14",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "rimraf": "^6.1.3"
+  }
+}

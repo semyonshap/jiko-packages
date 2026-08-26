@@ -1,0 +1,56 @@
+{
+  "name": "@jiko/next-logger-logtape",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/semyonshap/jiko-packages.git",
+    "directory": "packages/next-logger-logtape"
+  },
+  "bugs": {
+    "url": "https://github.com/semyonshap/jiko-packages/issues"
+  },
+  "keywords": [
+    "next",
+    "nextjs",
+    "logging",
+    "logtape",
+    "json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsdown --watch --logLevel warn",
+    "build": "tsdown",
+    "clean": "rimraf dist",
+    "lint": "eslint --fix .",
+    "typecheck": "tsc --noEmit",
+    "knip": "knip"
+  },
+  "peerDependencies": {
+    "@logtape/logtape": "^2.0.0",
+    "next": ">=13.1.0"
+  },
+  "devDependencies": {
+    "@logtape/logtape": "^2.0.0",
+    "@types/node": "^20",
+    "tsdown": "^0.22.0",
+    "typescript": "^5.5.0"
+  },
+  "dependencies": {
+    "ansi-regex": "^6.2.2"
+  }
+}
