@@ -38,7 +38,10 @@
     "clean": "rimraf dist",
     "lint": "eslint --fix .",
     "typecheck": "tsc --noEmit",
-    "knip": "knip"
+    "knip": "knip",
+    "test": "vitest run",
+    "test:integrations": "vitest run tests/integrations",
+    "test:demo": "vitest run tests/demo --disable-console-intercept"
   },
   "peerDependencies": {
     "@logtape/logtape": "^2.0.0",
@@ -47,6 +50,7 @@
   "devDependencies": {
     "@logtape/logtape": "^2.0.0",
     "@types/node": "^20",
+    "next": "^16.3.2",
     "tsdown": "^0.22.0",
     "typescript": "^5.5.0"
   },

@@ -51,27 +51,62 @@ function clean(value: unknown, stripAnsi: boolean): unknown {
     : value;
 }
 
+function isStructuredValue(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+/**
+ * Build a LogTape message template and structured `properties` from
+ * console-like arguments.
+ */
+function toLogTapeMessage(
+  args: readonly unknown[],
+  stripAnsi: boolean,
+): { template: string; properties: Record<string, unknown> } {
+  const properties: Record<string, unknown> = {};
+  let argIndex = 0;
+
+  const formattedArgs = args.map((value) => {
+    const cleaned = clean(value, stripAnsi);
+    if (isStructuredValue(cleaned)) {
+      const key = `arg${argIndex}`;
+      properties[key] = cleaned;
+      argIndex++;
+      return `{${key}}`;
+    }
+    return cleaned;
+  });
+
+  return { template: format(...formattedArgs), properties };
+}
+
 function logAt(
   logger: Logger,
   level: "info" | "debug" | "warn" | "error" | "trace",
-  message: string,
+  args: readonly unknown[],
+  stripAnsi: boolean,
   properties?: Record<string, unknown>,
 ) {
+  const { template, properties: structured } = toLogTapeMessage(
+    args,
+    stripAnsi,
+  );
+  const record = { ...properties, ...structured };
   switch (level) {
     case "debug":
-      logger.debug(message, properties);
+      logger.debug(template, record);
       break;
     case "warn":
-      logger.warn(message, properties);
+      logger.warn(template, record);
       break;
     case "error":
-      logger.error(message, properties);
+      logger.error(template, record);
       break;
     case "trace":
-      logger.trace(message, properties);
+      logger.trace(template, record);
       break;
     default:
-      logger.info(message, properties);
+      logger.info(template, record);
   }
 }
 
@@ -90,11 +125,7 @@ export function patchConsole(options: NextLoggerPatchOptions = {}): () => void {
   for (const [method, level] of consoleMethods) {
     original.set(method, target[method]);
     target[method] = (...args: unknown[]) => {
-      logAt(
-        consoleLogger,
-        level,
-        format(...args.map((value) => clean(value, stripAnsi))),
-      );
+      logAt(consoleLogger, level, args, stripAnsi);
     };
   }
 
@@ -114,30 +145,35 @@ export function patchNextLogging(
   options: NextLoggerPatchOptions = {},
 ): () => void {
   const { stripAnsi = true } = options;
-  const logPath = require.resolve("next/dist/build/output/log");
-  require(logPath);
-  const mod = require.cache[logPath];
-  if (!mod) return () => {};
+  try {
+    const logPath = require.resolve("next/dist/build/output/log");
+    require(logPath);
+    const mod = require.cache[logPath];
+    if (!mod) {
+      console.warn("[next-logger-logtape] Next.js log module not found");
+      return () => {};
+    }
 
-  const nextLogger = getBaseLogger(options).getChild("next");
-  const original = mod.exports;
-  const exports = { ...(mod.exports as Record<string, unknown>) };
+    const nextLogger = getBaseLogger(options).getChild("next");
+    const original = mod.exports;
+    const exports = { ...(mod.exports as Record<string, unknown>) };
 
-  for (const method of nextMethods) {
-    exports[method] = (...message: unknown[]) => {
-      logAt(
-        nextLogger,
-        nextLevels[method] ?? "info",
-        format(...message.map((value) => clean(value, stripAnsi))),
-        { prefix: method },
-      );
+    for (const method of nextMethods) {
+      exports[method] = (...message: unknown[]) => {
+        logAt(nextLogger, nextLevels[method] ?? "info", message, stripAnsi, {
+          prefix: method,
+        });
+      };
+    }
+
+    mod.exports = exports;
+    return () => {
+      mod.exports = original;
     };
+  } catch (err) {
+    console.warn("[next-logger-logtape] Failed to patch Next.js logger:", err);
+    return () => {};
   }
-
-  mod.exports = exports;
-  return () => {
-    mod.exports = original;
-  };
 }
 
 /**
