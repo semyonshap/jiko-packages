@@ -62,6 +62,7 @@
     "typescript": "^5.5.0"
   },
   "dependencies": {
+    "@edge-runtime/format": "^4.0.0",
     "ansi-regex": "^6.2.2"
   }
 }

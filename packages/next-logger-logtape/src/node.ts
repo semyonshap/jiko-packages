@@ -46,7 +46,12 @@ export function patchNextLogging(options: NextLoggerPatchOptions = {}): () => vo
           }
         }
 
-        logAt(nextLogger, nextLevels[method] ?? 'info', message, options.format)
+        logAt(
+          nextLogger,
+          nextLevels[method] ?? 'info',
+          [...message, { prefix: method }],
+          options.format,
+        )
       }
     }
 

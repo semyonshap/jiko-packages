@@ -126,6 +126,9 @@ importers:
 
   packages/next-logger-logtape:
     dependencies:
+      '@edge-runtime/format':
+        specifier: ^4.0.0
+        version: 4.0.0
       ansi-regex:
         specifier: ^6.2.2
         version: 6.3.0
@@ -387,6 +390,10 @@ packages:
 
   '@dotenvx/primitives@0.8.0':
     resolution: {integrity: sha512-VYJy0uhFm9zTJ1TxBaW/pA8bjbOM/OttaNMwZ1RHG4JKyRG7DhSdiqD1ipQoAyoD22olUtxbP78W9xY3Wd11bg==}
+
+  '@edge-runtime/format@4.0.0':
+    resolution: {integrity: sha512-dON4E/O3u0TvksmgS3E+3kniWerMji54mRA/uviHlbn7CiP7eYZVu2sgk/lXMaIvXAu+Jx+bV8KhE3+oQO5N5Q==}
+    engines: {node: '>=18'}
 
   '@electron-toolkit/eslint-config-prettier@3.0.0':
     resolution: {integrity: sha512-YapmIOVkbYdHLuTa+ad1SAVtcqYL9A/SJsc7cxQokmhcwAwonGevNom37jBf9slXegcZ/Slh01I/JARG1yhNFw==}
@@ -4925,6 +4932,8 @@ snapshots:
       yocto-spinner: 1.2.2
 
   '@dotenvx/primitives@0.8.0': {}
+
+  '@edge-runtime/format@4.0.0': {}
 
   '@electron-toolkit/eslint-config-prettier@3.0.0(eslint@9.39.5(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.6)':
     dependencies:

@@ -1,15 +1,14 @@
+import ansiRegex from 'ansi-regex'
+import { createFormat } from '@edge-runtime/format'
+import { getLogger, type Logger } from '@logtape/logtape'
+
 import {
   type NextLoggerPatchOptions,
   type MessageFormatOptions,
   DEFAULT_FORMAT_OPTIONS,
 } from './types'
 
-import ansiRegex from 'ansi-regex'
-import { getLogger, type Logger } from '@logtape/logtape'
-
-function format(...args: unknown[]): string {
-  return args.map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
-}
+const format = createFormat()
 
 export function getBaseLogger(options?: NextLoggerPatchOptions): Logger {
   return getLogger(options?.category ?? ['app'])

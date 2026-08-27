@@ -30,8 +30,6 @@ export const consoleMethods = [
   ['trace', 'trace'],
 ] as const
 
-export type ConsoleMethod = 'log' | 'info' | 'debug' | 'warn' | 'error' | 'trace'
-
 export const nextMethods = [
   'bootstrap',
   'error',

@@ -22,7 +22,7 @@ function isLogTapeJsonLine(value: unknown): boolean {
   }
 }
 
-export function storeRawConsole(): void {
+function storeRawConsole(): void {
   const globalRegistry = globalThis as unknown as Record<symbol, unknown>
   const consoleRegistry = console as unknown as Record<symbol, unknown>
 
