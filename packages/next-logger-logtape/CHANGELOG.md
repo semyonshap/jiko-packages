@@ -1,5 +1,16 @@
 # @with-jiko/next-logger-logtape
 
+## 1.1.4
+
+### Patch Changes
+
+- refactor: remove Edge-specific patch and dispatch context
+  feat: add isLogTapeJsonLine to detect internal logtape console writes
+  feat: add createRawConsoleProxy for safe original console access in sink
+  refactor: simplify logAt by removing dispatchContext wrapper
+  fix: improve filtering of undefined and null values in message formatting
+  chore: remove patchConsoleEdge and storeRawConsole exports
+
 ## 1.1.3
 
 ### Patch Changes
