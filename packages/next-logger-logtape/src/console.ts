@@ -1,4 +1,3 @@
-import { dispatchContext } from './context'
 import { getBaseLogger, logAt } from './utils'
 import {
   ORIGINAL_CONSOLE,
@@ -7,6 +6,21 @@ import {
   type NextLoggerPatchOptions,
   type TaggedFn,
 } from './types'
+
+function isLogTapeJsonLine(value: unknown): boolean {
+  if (typeof value !== 'string') return false
+  if (!value.startsWith('{') || !value.includes('"@timestamp"') || !value.includes('"level"')) {
+    return false
+  }
+  try {
+    const parsed: unknown = JSON.parse(value)
+    if (typeof parsed !== 'object' || parsed === null) return false
+    const record = parsed as Record<string, unknown>
+    return '@timestamp' in record && 'level' in record
+  } catch {
+    return false
+  }
+}
 
 export function storeRawConsole(): void {
   const globalRegistry = globalThis as unknown as Record<symbol, unknown>
@@ -52,12 +66,13 @@ export function patchConsole(options: NextLoggerPatchOptions = {}): () => void {
     original.set(method, trueOriginal)
 
     const wrapped: TaggedFn = (...args: unknown[]) => {
-      if (dispatchContext.isDispatching()) {
-        trueOriginal(...args)
-        return
-      }
       if (options.debug) {
         trueOriginal(...args, { debug: true, source: 'console', level, args })
+      }
+
+      if (args.length === 1 && isLogTapeJsonLine(args[0])) {
+        trueOriginal(args[0])
+        return
       }
 
       logAt(consoleLogger, level, args, options.format)

@@ -1,12 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { patchConsoleEdge } from '@with-jiko/next-logger-logtape/edge'
 import { emitLog } from '@/lib/utils'
 import type { LogLevel, Transport } from '@/types'
-
-// Patch console inside the middleware (Edge) bundle so that console.* arguments
-// are captured BEFORE the Edge runtime flattens them into a single string.
-patchConsoleEdge()
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

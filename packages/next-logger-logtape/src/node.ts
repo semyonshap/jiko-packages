@@ -1,8 +1,8 @@
 import { createRequire } from 'node:module'
 
 import { patchConsole } from './console'
-import { getBaseLogger, logAt } from './utils.js'
-import { nextLevels, nextMethods, type NextLoggerPatchOptions } from './types.js'
+import { getBaseLogger, logAt } from './utils'
+import { nextLevels, nextMethods, type NextLoggerPatchOptions } from './types'
 
 export function patchNextLogger(options: NextLoggerPatchOptions = {}): () => void {
   const restoreConsole = patchConsole(options)
