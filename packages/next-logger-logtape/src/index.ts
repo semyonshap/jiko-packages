@@ -1,3 +1,5 @@
-export { patchConsole } from './console'
 export type { NextLoggerPatchOptions } from './types'
 export { patchNextLogger, patchNextLogging } from './node'
+export { patchConsole } from './console'
+export { patchConsoleEdge, storeRawConsole } from './edge'
+export { getRawConsoleSink } from './sink'

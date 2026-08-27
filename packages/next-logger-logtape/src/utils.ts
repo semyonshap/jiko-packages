@@ -1,25 +1,17 @@
-import type { NextLoggerPatchOptions, MessageFormatOptions } from './types.js'
+import {
+  type NextLoggerPatchOptions,
+  type MessageFormatOptions,
+  DEFAULT_FORMAT_OPTIONS,
+  GUARDED,
+} from './types.js'
 
-import { format } from 'node:util'
 import ansiRegex from 'ansi-regex'
-import { AsyncLocalStorage } from 'node:async_hooks'
 import { getLogger, type Logger } from '@logtape/logtape'
 
-const DEFAULT_FORMAT_OPTIONS: Required<MessageFormatOptions> = {
-  stripAnsi: true,
-  replaceNewlines: true,
-}
+import { dispatchContext } from './context'
 
-const guardedSymbol = Symbol('next-logger-logtape.guarded')
-
-const dispatchContext = new AsyncLocalStorage<true>()
-
-export function isDispatching(): boolean {
-  return dispatchContext.getStore() === true
-}
-
-function runInDispatchContext<T>(fn: () => T): T {
-  return dispatchContext.run(true, fn)
+function format(...args: unknown[]): string {
+  return args.map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
 }
 
 function guardLoggerDispatch(logger: Logger): Logger {
@@ -28,18 +20,18 @@ function guardLoggerDispatch(logger: Logger): Logger {
   for (const level of levels) {
     const original = target[level] as ((...args: unknown[]) => unknown) | undefined
     if (typeof original !== 'function') continue
-    if ((original as { [guardedSymbol]?: boolean })[guardedSymbol]) continue
+    if ((original as { [GUARDED]?: boolean })[GUARDED]) continue
     const wrapped = (...args: unknown[]): unknown => {
-      return runInDispatchContext(() => original.call(logger, ...args))
+      return dispatchContext.run(() => original.call(logger, ...args))
     }
-    ;(wrapped as { [guardedSymbol]?: boolean })[guardedSymbol] = true
+    ;(wrapped as { [GUARDED]?: boolean })[GUARDED] = true
     target[level] = wrapped
   }
   return logger
 }
 
 export function getBaseLogger(options?: NextLoggerPatchOptions): Logger {
-  return guardLoggerDispatch(options?.logger ?? getLogger(options?.category ?? ['app']))
+  return guardLoggerDispatch(getLogger(options?.category ?? ['app']))
 }
 
 function clean(value: unknown, stripAnsi: boolean): unknown {
@@ -62,7 +54,7 @@ function toLogTapeMessage(
   const properties: Record<string, unknown> = {}
   const cleaned = args.map((v) => clean(v, stripAnsi))
 
-  const primitives = cleaned.filter((v) => !isStructuredValue(v) && v !== undefined)
+  const primitives = cleaned.filter((v) => !isStructuredValue(v))
   const objects = cleaned.filter((v) => isStructuredValue(v))
 
   let template = format(...primitives)
@@ -83,26 +75,9 @@ export function logAt(
   level: 'info' | 'debug' | 'warn' | 'error' | 'trace',
   args: readonly unknown[],
   formatOptions?: MessageFormatOptions,
-  properties?: Record<string, unknown>,
 ): void {
-  const { template, properties: structured } = toLogTapeMessage(args, formatOptions)
-  const record = { ...properties, ...structured }
-  runInDispatchContext(() => {
-    switch (level) {
-      case 'debug':
-        logger.debug(template, record)
-        break
-      case 'warn':
-        logger.warn(template, record)
-        break
-      case 'error':
-        logger.error(template, record)
-        break
-      case 'trace':
-        logger.trace(template, record)
-        break
-      default:
-        logger.info(template, record)
-    }
+  const { template, properties } = toLogTapeMessage(args, formatOptions)
+  dispatchContext.run(() => {
+    logger[level](template, properties)
   })
 }

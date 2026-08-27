@@ -1,31 +1,19 @@
-import type { NextLoggerPatchOptions } from './types.js'
+import { createRequire } from 'node:module'
 
+import { patchConsole } from './console'
 import { getBaseLogger, logAt } from './utils.js'
+import { nextLevels, nextMethods, type NextLoggerPatchOptions } from './types.js'
 
-const nextMethods = [
-  'bootstrap',
-  'error',
-  'event',
-  'info',
-  'ready',
-  'trace',
-  'wait',
-  'warn',
-  'warnOnce',
-] as const
-
-const nextLevels: Record<string, 'error' | 'warn' | 'trace' | 'info'> = {
-  error: 'error',
-  warn: 'warn',
-  trace: 'trace',
+export function patchNextLogger(options: NextLoggerPatchOptions = {}): () => void {
+  const restoreConsole = patchConsole(options)
+  const restoreNext = patchNextLogging(options)
+  return () => {
+    restoreConsole()
+    restoreNext()
+  }
 }
 
-/**
- * Patch Next.js internal logger (next/dist/build/output/log).
- * Returns restore function (async).
- */
-export async function patchNextLogging(options: NextLoggerPatchOptions = {}): Promise<() => void> {
-  const { createRequire } = await import('node:module')
+export function patchNextLogging(options: NextLoggerPatchOptions = {}): () => void {
   const require = createRequire(process.cwd() + '/')
 
   try {
@@ -41,11 +29,24 @@ export async function patchNextLogging(options: NextLoggerPatchOptions = {}): Pr
     const original = mod.exports
     const exports = { ...(mod.exports as Record<string, unknown>) }
 
+    const originalMethods = new Map<string, (...args: unknown[]) => void>()
+    for (const method of nextMethods) {
+      if (typeof original[method] === 'function') {
+        originalMethods.set(method, original[method] as (...args: unknown[]) => void)
+      }
+    }
+
     for (const method of nextMethods) {
       exports[method] = (...message: unknown[]) => {
-        logAt(nextLogger, nextLevels[method] ?? 'info', message, options.format, {
-          prefix: method,
-        })
+        if (options.debug) {
+          const origFn = originalMethods.get(method)
+          if (origFn) {
+            const debugMessage = [...message, { debug: true, source: 'nextjs' }]
+            origFn(...debugMessage)
+          }
+        }
+
+        logAt(nextLogger, nextLevels[method] ?? 'info', message, options.format)
       }
     }
 
@@ -56,19 +57,5 @@ export async function patchNextLogging(options: NextLoggerPatchOptions = {}): Pr
   } catch (err) {
     console.warn('[next-logger-logtape] Failed to patch Next.js logger:', err)
     return () => {}
-  }
-}
-
-/**
- * Patch both console and Next.js logger.
- * Returns combined restore function (async).
- */
-export async function patchNextLogger(options: NextLoggerPatchOptions = {}): Promise<() => void> {
-  const { patchConsole } = await import('./console.js')
-  const restoreConsole = patchConsole(options)
-  const restoreNext = await patchNextLogging(options)
-  return () => {
-    restoreConsole()
-    restoreNext()
   }
 }

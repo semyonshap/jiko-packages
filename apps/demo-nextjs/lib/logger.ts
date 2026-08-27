@@ -1,9 +1,9 @@
-import { configure, getConsoleSink, getJsonLinesFormatter, getLogger } from '@logtape/logtape'
+import { configure, getJsonLinesFormatter, getLogger } from '@logtape/logtape'
+import { getRawConsoleSink } from '@with-jiko/next-logger-logtape/sink'
 
 await configure({
   sinks: {
-    console: getConsoleSink({
-      console: globalThis.console,
+    console: getRawConsoleSink({
       formatter: getJsonLinesFormatter({
         properties: 'flatten',
       }),

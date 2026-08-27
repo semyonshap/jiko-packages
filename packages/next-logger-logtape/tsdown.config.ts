@@ -1,16 +1,13 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    console: 'src/console.ts',
-    node: 'src/node.ts',
-  },
+  entry: ['src/index.ts'],
   outDir: 'dist',
   format: ['cjs', 'esm'],
+  unbundle: true,
   sourcemap: true,
   dts: true,
   deps: {
-    neverBundle: ['next', '@logtape/logtape'],
+    neverBundle: ['next', '@logtape/logtape', 'ansi-regex'],
   },
 })

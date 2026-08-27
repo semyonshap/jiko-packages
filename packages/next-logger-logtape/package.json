@@ -31,15 +31,10 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
-    "./console": {
-      "types": "./dist/console.d.mts",
-      "import": "./dist/console.mjs",
-      "require": "./dist/console.cjs"
-    },
-    "./node": {
-      "types": "./dist/node.d.mts",
-      "import": "./dist/node.mjs",
-      "require": "./dist/node.cjs"
+    "./*": {
+      "types": "./dist/*.d.mts",
+      "import": "./dist/*.mjs",
+      "require": "./dist/*.cjs"
     }
   },
   "files": [

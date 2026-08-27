@@ -43,6 +43,20 @@ export default function LoggerPage() {
     })
   }
 
+  const handleMiddlewareLog = () => {
+    const { message, level, context, transport } = getValues()
+    void fetch('/logger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transport,
+        level,
+        message,
+        ...(context ? { context } : {}),
+      }),
+    }).catch(() => {})
+  }
+
   const onServerSubmit = handleSubmit(async (data) => {
     await ServerLog(data)
   })
@@ -139,6 +153,9 @@ export default function LoggerPage() {
           <Button type="submit">Server</Button>
           <Button type="button" variant="outline" onClick={handleClientLog}>
             Client
+          </Button>
+          <Button type="button" variant="outline" onClick={handleMiddlewareLog}>
+            Middleware
           </Button>
         </div>
       </form>
